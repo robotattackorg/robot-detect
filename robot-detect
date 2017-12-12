@@ -224,7 +224,7 @@ if (oracle_good != oracle_good_verify) or (oracle_bad1 != oracle_bad_verify1) or
     if not args.quiet:
         print("Getting inconsistent results, aborting.")
     if args.csv:
-        print("INCONSISTENT,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (args.host, ip, tlsver, oracle_strength, flowt, oracle_good, oracle_bad1, oracle_bad2, oracle_bad3, oracle_bad4))
+        print("INCONSISTENT,%s,%s,,,,%s,%s,%s,%s,%s" % (args.host, ip, oracle_good, oracle_bad1, oracle_bad2, oracle_bad3, oracle_bad4))
     quit()
 
 # If the response to the invalid PKCS#1 request (oracle_bad1) is equal to both
