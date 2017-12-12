@@ -36,6 +36,7 @@ def get_rsa_from_server(server, port):
         ctx.verify_mode = ssl.CERT_NONE
         ctx.set_ciphers("RSA")
         raw_socket = socket.socket()
+        raw_socket.settimeout(timeout)
         s = ctx.wrap_socket(raw_socket)
         s.connect((server, port))
         cert_raw = s.getpeercert(binary_form=True)
@@ -48,7 +49,7 @@ def get_rsa_from_server(server, port):
             # TODO: We could add an extra check that the server speaks TLS without RSA
             print("NORSA,%s,%s,,,,,,,," % (args.host, ip))
         quit()
-    except ConnectionRefusedError as e:
+    except (ConnectionRefusedError, socket.timeout) as e:
         if not args.quiet:
             print("Cannot connect to server: %s" % e)
         if args.csv:
