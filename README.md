@@ -10,6 +10,12 @@ Dependencies
 
 This script needs Python3 and the gmpy2 library.
 
+For MacOS: `brew install libmpc mpfr gmp`
+
+For Debian: `apt-get install libgmp3-dev libmpfr-dev libmpc-dev python3-dev`
+
+Then, `pip install -r requirements.txt`
+
 License
 =======
 
