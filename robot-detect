@@ -29,6 +29,27 @@ MSG_FASTOPEN = 0x20000000
 EXECUTE_BLINDING = True
 
 
+class StarttlsFailure(ConnectionError):
+    pass
+
+def starttls(sock):
+    if not args.starttls:
+        return
+
+    if args.starttls == 'smtp':
+        greeting = sock.recv(1024)
+        if not greeting.startswith(b"220"):
+            raise StarttlsFailure(greeting)
+        sock.sendall(b"EHLO robot.detect\r\n")
+        reply = sock.recv(1024)
+        if b"STARTTLS" not in reply:
+            raise StarttlsFailure(reply)
+        sock.sendall(b"STARTTLS\r\n")
+        reply = sock.recv(1024)
+        if not greeting.startswith(b"220"):
+            raise StarttlsFailure(reply)
+
+
 def get_rsa_from_server(server, port):
     try:
         ctx = ssl.create_default_context()
@@ -37,8 +58,10 @@ def get_rsa_from_server(server, port):
         ctx.set_ciphers("RSA")
         raw_socket = socket.socket()
         raw_socket.settimeout(timeout)
+        raw_socket.connect((server, port))
+        starttls(raw_socket)
         s = ctx.wrap_socket(raw_socket)
-        s.connect((server, port))
+        s.do_handshake()
         cert_raw = s.getpeercert(binary_form=True)
         cert_dec = x509.load_der_x509_certificate(cert_raw, default_backend())
         return cert_dec.public_key().public_numbers().n, cert_dec.public_key().public_numbers().e
@@ -57,6 +80,12 @@ def get_rsa_from_server(server, port):
         if args.csv:
             print("NOTLS,%s,%s,,,,,,,," % (args.host, ip))
         quit()
+    except StarttlsFailure as e:
+        if not args.quiet:
+            print("Cannot negotiate starttls with server: %s" % e)
+        if args.csv:
+            print("NOSTARTTLS,%s,%s,,,,,,,," % (args.host, ip))
+        quit()
 
 
 def oracle(pms, messageflow=False):
@@ -64,8 +93,9 @@ def oracle(pms, messageflow=False):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        if not enable_fastopen:
+        if not enable_fastopen or args.starttls:
             s.connect((ip, args.port))
+            starttls(s)
             s.sendall(ch)
         else:
             s.sendto(ch, MSG_FASTOPEN, (ip, args.port))
@@ -125,6 +155,7 @@ parser.add_argument("host", help="Target host")
 parser.add_argument("-p", "--port", metavar='int', default=443, help="TCP port")
 parser.add_argument("-t", "--timeout", default=5, help="Timeout")
 parser.add_argument("-q", "--quiet", help="Quiet", action="store_true")
+parser.add_argument("--starttls", help="STARTTLS", choices=['smtp'])
 groupcipher = parser.add_mutually_exclusive_group()
 groupcipher.add_argument("--gcm", help="Use only GCM/AES256.", action="store_true")
 groupcipher.add_argument("--cbc", help="Use only CBC/AES128.", action="store_true")
