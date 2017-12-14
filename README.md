@@ -8,7 +8,7 @@ More Info:
 Dependencies
 ============
 
-This script needs Python3 and the gmpy2 library.
+This script needs Python 3, the gmpy2 and the cryptography library.
 
 License
 =======
