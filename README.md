@@ -10,6 +10,13 @@ Dependencies
 
 This script needs Python 3, the gmpy2 and the cryptography library.
 
+Install with pip
+================
+
+To install with the needed dependencies run:
+
+`pip install robot-detect`
+
 License
 =======
 
