@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
@@ -16,7 +16,7 @@ More Info:
 https://robotattack.org/
 """
 
-VERSION = 0.1
+VERSION = 0.2
 
 setup(
     name=package_name,
@@ -28,6 +28,7 @@ setup(
     url='https://www.robotattack.org',
     packages=[],
     scripts=['robot-detect'],
+    python_requires='>=3',
     install_requires=[
         'gmpy2',
         'cryptography'
