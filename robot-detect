@@ -45,6 +45,7 @@ def get_rsa_from_server(server, port):
     except ssl.SSLError as e:
         if not args.quiet:
             print("Cannot connect to server: %s" % e)
+            print("Server does not seem to allow connections with TLS_RSA (this is ideal).")
         if args.csv:
             # TODO: We could add an extra check that the server speaks TLS without RSA
             print("NORSA,%s,%s,,,,,,,," % (args.host, ip))
@@ -52,6 +53,7 @@ def get_rsa_from_server(server, port):
     except (ConnectionRefusedError, socket.timeout) as e:
         if not args.quiet:
             print("Cannot connect to server: %s" % e)
+            print("There seems to be no TLS on this host/port.")
         if args.csv:
             print("NOTLS,%s,%s,,,,,,,," % (args.host, ip))
         quit()
