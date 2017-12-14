@@ -17,6 +17,12 @@ To install with the needed dependencies run:
 
 `pip install robot-detect`
 
+For MacOS: `brew install libmpc mpfr gmp`
+
+For Debian: `apt-get install libgmp3-dev libmpfr-dev libmpc-dev python3-dev`
+
+Then, `pip install -r requirements.txt`
+
 License
 =======
 
