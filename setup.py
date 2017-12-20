@@ -3,10 +3,10 @@
 from setuptools import setup
 
 
-package_name = 'robot-detect'
+package_name = 'robot_detect'
 
 readme = """
-robot-detect
+robot_detect
 ============
 
 Tool to detect the ROBOT vulnerability (Return of Bleichenbacher's Oracle Threat).
@@ -27,7 +27,7 @@ setup(
     author_email='hanno@hboeck.de',
     url='https://www.robotattack.org',
     packages=[],
-    scripts=['robot-detect'],
+    scripts=['robot_detect.py'],
     python_requires='>=3',
     install_requires=[
         'gmpy2',
@@ -49,4 +49,9 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
+    entry_points={
+        'console_scripts': [
+            'command-name = robot_detect.robot_detect:main',
+        ],
+    },
 )
