@@ -16,7 +16,7 @@ More Info:
 https://robotattack.org/
 """
 
-VERSION = 0.2
+VERSION = 0.3
 
 setup(
     name=package_name,
@@ -26,8 +26,7 @@ setup(
     author="Hanno Böck, Juraj Somorovsky, Craig Young",
     author_email='hanno@hboeck.de',
     url='https://www.robotattack.org',
-    packages=[],
-    scripts=['robot-detect'],
+    py_modules=['robot_detect'],
     python_requires='>=3',
     install_requires=[
         'gmpy2',
@@ -49,4 +48,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
+    entry_points={
+        'console_scripts': ['robot-detect=robot_detect:main'],
+    }
 )
