@@ -51,7 +51,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'command-name = robot_detect.robot_detect:main',
+            'robot-detect = robot_detect.robot_detect:main',
         ],
     },
 )
