@@ -5,7 +5,7 @@ from setuptools import setup
 package_name = 'robot-detect'
 
 readme = """
-robot_detect
+robot-detect
 ============
 
 Tool to detect the ROBOT vulnerability (Return of Bleichenbacher's Oracle Threat).
