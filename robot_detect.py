@@ -313,7 +313,7 @@ def main(command_line_args=None):
     groupcipher.add_argument("--gcm", help="Use only GCM/AES256.", action="store_true")
     groupcipher.add_argument("--cbc", help="Use only CBC/AES128.", action="store_true")
     parser.add_argument("--csv", help="Output CSV format", action="store_true")
-    parser.add_argument("--no-exception", help="Quiet", action="store_true")
+    parser.add_argument("--no-exception", help="Do not quit if the script finishes, or an exception is thrown", action="store_true")
     if command_line_args:
         args = parser.parse_args(command_line_args)
     else:

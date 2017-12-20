@@ -35,6 +35,8 @@ results = robot_main(shlex.split("<host_name> -p <port>"))
 
 `results` will be a string of what would have been printed if the server is vulnerable.
 
+After `robot_main` finishes running, it will quit your script. If you do not want the script to quit after running, add the `--no-exception` flag.
+
 License
 =======
 
