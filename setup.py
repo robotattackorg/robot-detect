@@ -16,7 +16,7 @@ More Info:
 https://robotattack.org/
 """
 
-VERSION = 0.2
+VERSION = 0.3
 
 setup(
     name=package_name,
