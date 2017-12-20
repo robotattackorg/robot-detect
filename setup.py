@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
 
-package_name = 'robot_detect'
+package_name = 'robot-detect'
 
 readme = """
 robot_detect
@@ -26,8 +25,7 @@ setup(
     author="Hanno Böck, Juraj Somorovsky, Craig Young",
     author_email='hanno@hboeck.de',
     url='https://www.robotattack.org',
-    packages=[],
-    scripts=['robot_detect.py'],
+    py_modules=['robot_detect'],
     python_requires='>=3',
     install_requires=[
         'gmpy2',
@@ -50,8 +48,6 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     entry_points={
-        'console_scripts': [
-            'robot-detect = robot_detect.robot_detect:main',
-        ],
-    },
+        'console_scripts': ['robot-detect=robot_detect:main'],
+    }
 )

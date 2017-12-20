@@ -301,9 +301,8 @@ def run(args):
     return finding
 
 
-def main(command_line_args: str = None):
+def main(command_line_args=None):
     global timeout
-    print("in main")
 
     parser = argparse.ArgumentParser(description="Bleichenbacher attack")
     parser.add_argument("host", help="Target host")
@@ -316,7 +315,7 @@ def main(command_line_args: str = None):
     parser.add_argument("--csv", help="Output CSV format", action="store_true")
     parser.add_argument("--no-exception", help="Quiet", action="store_true")
     if command_line_args:
-        args = parser.parse_args(shlex.split(command_line_args))
+        args = parser.parse_args(command_line_args)
     else:
         args = parser.parse_args()
 
