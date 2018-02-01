@@ -1,6 +1,7 @@
 # robot-detect
 
-Tool to detect the ROBOT attack (Return of Bleichenbacher's Oracle Threat).
+Proof of concept attack and detection for ROBOT (Return Of
+Bleichenbacher's Oracle Threat).
 
 More Info:
 * https://robotattack.org/
@@ -24,5 +25,9 @@ This work is licensed as CC0 (public domain).
 
 Authors
 =======
+
+The attack proof of concept code was provided by Tibor Jager.
+
+The detection was written by the ROBOT team:
 
 Hanno Böck, Juraj Somorovsky, Craig Young
