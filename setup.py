@@ -9,21 +9,22 @@ readme = """
 robot-detect
 ============
 
-Tool to detect the ROBOT vulnerability (Return of Bleichenbacher's Oracle Threat).
+Tool to detect and exploit the ROBOT vulnerability (Return of
+Bleichenbacher's Oracle Threat).
 
 More Info:
 
 https://robotattack.org/
 """
 
-VERSION = 0.2
+VERSION = 0.3
 
 setup(
     name=package_name,
     version=VERSION,
     description="Detection for ROBOT vulnerability",
     long_description=readme,
-    author="Hanno Böck, Juraj Somorovsky, Craig Young",
+    author="Hanno Böck, Juraj Somorovsky, Craig Young, Tibor Jager",
     author_email='hanno@hboeck.de',
     url='https://www.robotattack.org',
     packages=[],
